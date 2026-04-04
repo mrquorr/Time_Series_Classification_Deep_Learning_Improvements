@@ -1,0 +1,105 @@
+IMPROVEMENTS LOG
+================================================================================
+Project: Time Series Classification — Deep Learning Improvements
+Models:  FCN, MLP, ResNet (Wang, Yan & Oates 2016)
+================================================================================
+
+[2026-04-01] Focal Loss
+--------------------------------------------------------------------------------
+Files:    FCN_Improved.ipynb (cell 7, 15, 16)
+          MLP_Improved.ipynb (cell 9, 16, 17)
+          ResNet_Improved.ipynb (cell 9, 16, 17)
+          FCN_experiments_1.0.ipynb (cell 15, 16)
+
+Added focal_loss(gamma) as an alternative to categorical cross-entropy.
+Loss function: FL(p_t) = -(1 - p_t)^gamma * log(p_t)
+
+Unlike static class weights, focal loss dynamically down-weights predictions
+the model is already confident about, directing gradient toward hard and
+misclassified examples. gamma=0 recovers standard cross-entropy; gamma=2 is
+the standard setting (stored in CONFIG['focal_gamma'], default 2.0).
+
+When use_focal_loss=True is passed to run_experiment(), the model is
+recompiled after construction with focal loss as the loss function, preserving
+learning_rate and clipnorm from builder_kwargs.
+
+Motivation: MedicalImages has a 34x class imbalance (6 vs 203 samples per
+class). Static class weights help but react only to frequency; focal loss
+additionally reacts to the model's current confidence per sample.
+
+
+[2026-04-01] Class-Conditional Jitter Augmentation
+--------------------------------------------------------------------------------
+Files:    FCN_Improved.ipynb (cell 7, 15, 16)
+          MLP_Improved.ipynb (cell 9, 16, 17)
+          ResNet_Improved.ipynb (cell 9, 16, 17)
+          FCN_experiments_1.0.ipynb (cell 15, 16)
+
+Added augment_jitter_conditional(x, y, sigma_base, imbalance_threshold, seed).
+
+Per-class jitter where sigma scales with inverse class frequency:
+  sigma_class = sigma_base * sqrt(mean_count / class_count)
+
+Minority classes (count < mean) receive proportionally more noise. When the
+dataset is roughly balanced (max/min <= imbalance_threshold, default 2.0), all
+classes are treated as underrepresented and scaled jitter is applied to all.
+
+Enabled via use_conditional_jitter=True on run_experiment(). Can be combined
+with or used instead of the uniform use_jitter option.
+
+Motivation: Uniform jitter applies the same noise magnitude to all classes.
+For imbalanced datasets this underserves the minority — conditional jitter
+generates more varied synthetic signal for rare classes.
+
+
+[2026-04-01] SMOTE Oversampling
+--------------------------------------------------------------------------------
+Files:    FCN_Improved.ipynb (cell 7, 15, 16)
+          MLP_Improved.ipynb (cell 9, 16, 17)
+          ResNet_Improved.ipynb (cell 9, 16, 17)
+          FCN_experiments_1.0.ipynb (cell 15, 16)
+
+Added smote_oversample(x, y, imbalance_threshold, seed) using
+imbalanced-learn's SMOTE, treating each timestep as a feature.
+
+Sampling strategy:
+  - Imbalanced dataset (max/min > threshold): minority classes upsampled to
+    mean count, majority classes left unchanged.
+  - Balanced but small dataset (max/min <= threshold): all classes upsampled
+    to max count.
+
+k_neighbors is capped at min(5, min_class_size - 1) to degrade gracefully
+when a class has very few samples (e.g. MedicalImages with 6 samples).
+Applied before reshape to Conv1D format so the 2-D array shape is preserved.
+
+Enabled via use_smote=True on run_experiment().
+Requires: pip install imbalanced-learn
+
+Motivation: Class weights and focal loss adjust the loss signal but do not
+add new training samples. SMOTE creates synthetic interpolations between
+k-nearest neighbors within each minority class, directly addressing the
+data scarcity rather than reweighting.
+
+
+[2026-04-02] End-of-Experiment Results Summary Table
+--------------------------------------------------------------------------------
+Files:    FCN_experiments_1.0.ipynb (cell 16)
+
+Added a formatted summary table printed at the end of every run_experiment()
+call, after all datasets and seeds complete.
+
+Columns printed (values averaged across seeds):
+  Dataset    — dataset name
+  Train N    — training set size
+  Test N     — test set size
+  Classes    — number of classes
+  Val Acc    — mean best validation accuracy across seeds
+  Error      — mean best validation error across seeds
+  Best Epoch — average epoch at which best val accuracy was achieved
+  Epochs Run — average total epochs trained (reflects early stopping)
+
+Motivation: Previously the per-dataset summaries were scattered through the
+verbose training output, making it hard to compare results across datasets in
+a single glance at the end of a long run.
+
+================================================================================

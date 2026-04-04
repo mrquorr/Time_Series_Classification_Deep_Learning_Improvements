@@ -3,6 +3,13 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+# Data
+Adiac/*
+Coffee/*
+GunPoint/*
+InlineSkate/*
+MedicalImages/*
+
 # C extensions
 *.so
 
