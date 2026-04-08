@@ -13,4 +13,4 @@ https://github.com/cauchyturing/UCR_Time_Series_Classification_Deep_Learning_Bas
 The notebooks ending with '_Reproduced.ipynb' contain the code for reproducing the paper's results for each model. Ensure that the dataset files are in the same directory as the notebook and then simply run the code. No changes were made to the original code except for the necessary minor debugging required to ensure the code runs on modern TensorFlow / Keras. 
 
 ## Improving the results
-The notebooks ending with '_Improved.ipynb' contain the code with various improvements for each model, along with the corresponding results and visualizations.
+The notebooks ending with '_Improved.ipynb' contain the code with various improvements for each model, along with the corresponding descriptions, results, and visualizations.
