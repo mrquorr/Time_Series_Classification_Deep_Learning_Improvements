@@ -14,3 +14,8 @@ The notebooks ending with '_Reproduced.ipynb' contain the code for reproducing t
 
 ## Improving the results
 The notebooks ending with '_Improved.ipynb' contain the code with various improvements for each model, along with the corresponding descriptions, results, and visualizations.
+
+## Experiments
+
+* Experiments 2.0 - adding preprocessing techniques (conditional jitter / focal loss / SMOTE synthesis) to the preprocessing stage of the experiments, results show some improvements in the more disbalanced datasets (ADIAC, MedicalImages)
+* Experiments 3.0 - 2x network size experimentation, results show worse results (overfitting) on all datasets
